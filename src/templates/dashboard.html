@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TCG Card Manager Dashboard</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(120deg, #232526, #414345);
+            color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #2c2f34;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            padding: 32px 40px 40px 40px;
+        }
+        .add-btn {
+            display: block;
+            margin: 0 auto 24px auto;
+            padding: 12px 32px;
+            background: linear-gradient(90deg, #00adb5, #ffd700);
+            color: #232526;
+            font-weight: bold;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        .add-btn:hover {
+            background: linear-gradient(90deg, #ffd700, #00adb5);
+            color: #232526;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+            letter-spacing: 2px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2em;
+            background: #232526;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .stats div {
+            text-align: center;
+            flex: 1;
+        }
+        .stats div:not(:last-child) {
+            border-right: 1px solid #444;
+        }
+        .stats strong {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            color: #ffd700;
+        }
+        h2 {
+            margin-top: 2em;
+            text-align: center;
+            color: #ffd700;
+        }
+        .tcg-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 auto;
+            max-width: 400px;
+        }
+        .tcg-list li {
+            background: #393e46;
+            margin: 12px 0;
+            padding: 18px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+        }
+        .tcg-list .tcg-name {
+            font-weight: bold;
+            color: #00adb5;
+            letter-spacing: 1px;
+        }
+        .tcg-list .tcg-value {
+            color: #ffd700;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #232526;
+            padding: 32px 24px 24px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            min-width: 320px;
+            max-width: 90vw;
+        }
+        .modal-content label {
+            font-weight: bold;
+            color: #ffd700;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .modal-content input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            margin-bottom: 18px;
+            font-size: 1em;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .modal-actions .accept-btn {
+            background: linear-gradient(90deg, #00adb5, #ffd700);
+            color: #232526;
+        }
+        .modal-actions .cancel-btn {
+            background: #393e46;
+            color: #fff;
+        }
+        /* Processing modal */
+        .processing-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+        }
+        .processing-content {
+            background: #232526;
+            color: #ffd700;
+            padding: 32px 48px;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .spinner {
+            border: 4px solid #393e46;
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+        @media (max-width: 600px) {
+            .container { padding: 16px; }
+            .stats { flex-direction: column; }
+            .stats div:not(:last-child) { border-right: none; border-bottom: 1px solid #444; margin-bottom: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="add-btn" id="openModalBtn">+ Add Booster</button>
+        <h1>TCG Card Manager</h1>
+        <div class="stats">
+            <div>
+                <strong>Total Cards</strong>
+                <span>{{ total_cards }}</span>
+            </div>
+            <div>
+                <strong>Total Value</strong>
+                <span>${{ "{:,}".format(total_value) }}</span>
+            </div>
+        </div>
+        <h2>Stats by TCG</h2>
+        <ul class="tcg-list">
+        {% for stat in tcg_stats %}
+            <li>
+                <span class="tcg-name">{{ stat.tcg|capitalize }}</span>
+                <span>{{ stat.count }} cards</span>
+                <span class="tcg-value">${{ "{:,}".format(stat.value) }}</span>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="boosterModal">
+        <div class="modal-content">
+            <label for="boosterPath">Booster file path:</label>
+            <input type="text" id="boosterPath" placeholder="Enter file path...">
+            <div class="modal-actions">
+                <button class="accept-btn" id="acceptBtn">Accept</button>
+                <button class="cancel-btn" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Modal -->
+    <div class="processing-modal" id="processingModal">
+        <div class="processing-content">
+            <div class="spinner"></div>
+            Processing...
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('boosterModal');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const acceptBtn = document.getElementById('acceptBtn');
+        const boosterPathInput = document.getElementById('boosterPath');
+        const processingModal = document.getElementById('processingModal');
+
+        openModalBtn.onclick = () => {
+            boosterPathInput.value = '';
+            modal.style.display = 'flex';
+            boosterPathInput.focus();
+        };
+        cancelBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+        acceptBtn.onclick = () => {
+            const boosterPath = boosterPathInput.value.trim();
+            if (boosterPath) {
+                modal.style.display = 'none';
+                processingModal.style.display = 'flex';
+                fetch('/add-booster', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({booster_path: boosterPath})
+                }).then(response => response.json())
+                  .then(data => {
+                      processingModal.style.display = 'none';
+                      window.location.reload();
+                  });
+            }
+        };
+        // Optional: close modal on outside click
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
