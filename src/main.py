@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from format_logger.logger import logger
 
 from utils.functions import get_stats, add_booster_to_collection
 
@@ -7,18 +8,27 @@ app = Flask(__name__)
 
 @app.route("/")
 def dashboard():
+    log = logger("card_management", "dashboard")
     collection_stats = get_stats()
     total_value, total_cards = collection_stats["total_value"], collection_stats["total_cards"]
     tcg_stats = [
-        {"tcg": tcg, "count": get_stats(tcg)["total_cards"], "value": get_stats(tcg)["total_value"]}
-        for tcg in ["magic", "pokemon", "lorcana", "digimon"]
+        {
+            "tcg": tcg.replace("-", " "), 
+            "count": get_stats(tcg)["total_cards"],
+            "value": get_stats(tcg)["total_value"]
+        }
+        for tcg in ["magic-the-gathering", "pokemon", "disney-lorcana", "digimon"]
     ]
+    log.end_function()
     return render_template("dashboard.html", total_value=total_value, total_cards=total_cards, tcg_stats=tcg_stats)
 
 @app.route("/add-booster", methods=["POST"])
 def add_booster():
+    log = logger("card_management", "add_booster")
     booster_path = request.json.get("booster_path")
-    add_booster_to_collection(booster_path)
+    tcg = request.json.get("tcg")
+    add_booster_to_collection(booster_path, tcg.lower(), log)
+    log.end_function()
     return jsonify({"status": "success"})
 
 if __name__ == "__main__":

@@ -46,11 +46,12 @@
         }
         .stats {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             margin-bottom: 2em;
             background: #232526;
             border-radius: 10px;
             padding: 20px;
+            gap: 60px; /* Add more space between columns */
         }
         .stats div {
             text-align: center;
@@ -83,17 +84,26 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.10);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             font-size: 1.1em;
+            gap: 32px;
         }
         .tcg-list .tcg-name {
             font-weight: bold;
             color: #00adb5;
             letter-spacing: 1px;
+            min-width: 120px;
+            text-align: center;
         }
         .tcg-list .tcg-value {
             color: #ffd700;
+            min-width: 100px;
+            text-align: center;
+        }
+        .tcg-list .tcg-count {
+            min-width: 80px;
+            text-align: center;
         }
         .modal {
             display: none;
@@ -206,8 +216,8 @@
         <ul class="tcg-list">
         {% for stat in tcg_stats %}
             <li>
-                <span class="tcg-name">{{ stat.tcg|capitalize }}</span>
-                <span>{{ stat.count }} cards</span>
+                <span class="tcg-name">{{ stat.tcg|replace("-", "")|capitalize }}</span>
+                <span class="tcg-count">{{ stat.count }} cards</span>
                 <span class="tcg-value">${{ "{:,}".format(stat.value) }}</span>
             </li>
         {% endfor %}
@@ -217,7 +227,14 @@
     <!-- Modal -->
     <div class="modal" id="boosterModal">
         <div class="modal-content">
-            <label for="boosterPath">Booster file path:</label>
+            <label for="tcgSelect">Select TCG:</label>
+            <select id="tcgSelect">
+                <option value="magic-the-gathering">Magic</option>
+                <option value="pokemon">Pokemon</option>
+                <option value="disney-lorcana">Lorcana</option>
+                <option value="digimon">Digimon</option>
+            </select>
+            <label for="boosterPath" style="margin-top:12px;">Booster file path:</label>
             <input type="text" id="boosterPath" placeholder="Enter file path...">
             <div class="modal-actions">
                 <button class="accept-btn" id="acceptBtn">Accept</button>
@@ -240,10 +257,12 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const acceptBtn = document.getElementById('acceptBtn');
         const boosterPathInput = document.getElementById('boosterPath');
+        const tcgSelect = document.getElementById('tcgSelect');
         const processingModal = document.getElementById('processingModal');
 
         openModalBtn.onclick = () => {
             boosterPathInput.value = '';
+            tcgSelect.selectedIndex = 0;
             modal.style.display = 'flex';
             boosterPathInput.focus();
         };
@@ -252,13 +271,14 @@
         };
         acceptBtn.onclick = () => {
             const boosterPath = boosterPathInput.value.trim();
-            if (boosterPath) {
+            const tcg = tcgSelect.value;
+            if (boosterPath && tcg) {
                 modal.style.display = 'none';
                 processingModal.style.display = 'flex';
                 fetch('/add-booster', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({booster_path: boosterPath})
+                    body: JSON.stringify({booster_path: boosterPath, tcg: tcg})
                 }).then(response => response.json())
                   .then(data => {
                       processingModal.style.display = 'none';
@@ -266,7 +286,6 @@
                   });
             }
         };
-        // Optional: close modal on outside click
         window.onclick = function(event) {
             if (event.target === modal) {
                 modal.style.display = "none";

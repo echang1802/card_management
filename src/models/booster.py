@@ -1,5 +1,6 @@
 import pandas as pd
 from dataclasses import dataclass
+from format_logger.logger import logger
 
 from models.card import Card
 from models.price_finder import PriceFinder
@@ -9,7 +10,9 @@ class Booster:
     game: str
     set: str
 
-    def open(self, booster_filename : str) -> None:
+    def open(self, booster_filename : str, log) -> None:
+        log = log.start_function("Booster.open")
+
         # Logic to open a booster pack and return the cards inside
         self.cards = []
 
@@ -24,14 +27,12 @@ class Booster:
                 set=self.set,
                 game=self.game
             )
-            card.price = priceF.find_card_price(card)
+            card.price = priceF.find_card_price(card, log)
             self.cards.append(card)
+            log.INFO(f"Card added: {card.name} with price {card.price}")
+        log.end_function()
 
     def get_booster_value(self) -> float:
         # Calculate the total value of the booster pack
-        return sum(card.price for card in self.cards)
-        
-        
+        return round(sum(card.price for card in self.cards), 2)
 
-        
-        
