@@ -19,7 +19,7 @@ class Booster:
         priceF = PriceFinder()
 
         booster = pd.read_csv(booster_filename)
-        for _, row in booster.iterrows():
+        for idx, row in booster.iterrows():
             card = Card(
                 name=row['card_name'],
                 rarity=row['rarity'],
@@ -28,6 +28,11 @@ class Booster:
                 game=self.game
             )
             card.price = priceF.find_card_price(card, log)
+            if card.price == -1:
+                log.WARNING("Daily limit exceeded for JustTCG API. Skipping card price retrieval for remaining cards.")
+                booster = booster.iloc[:idx]  # Stop processing further cards
+                booster.to_csv(booster_filename, index=False)                
+                break
             self.cards.append(card)
             log.INFO(f"Card added: {card.name} with price {card.price}")
         log.end_function()

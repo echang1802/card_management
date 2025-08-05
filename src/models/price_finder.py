@@ -27,7 +27,10 @@ class PriceFinder:
         url = f"{self._base_url}/{self._cards_endpoint}"
         response = requests.get(url, headers=self._headers, params=params)
         response = response.json()
-        if "error" in response.keys():
+        if "error" in response.keys() and response["code"] == "DAILY_LIMIT_EXCEEDED":
+            log.ERROR("Daily limit exceeded for JustTCG API. Please try again later.")
+            return -1
+        elif "error" in response.keys():
             log.ERROR(f"Error fetching card price: {response['error']}")
             price = 0
         elif response["meta"]["total"] == 0:

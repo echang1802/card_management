@@ -19,9 +19,10 @@ class Collection:
     def add_booster(self, booster, log)-> None:
         log = log.start_function("Collection.add_booster")
         for card in booster.cards:
-            if card.name in self._data['name'].values:
-                self._data.loc[self._data['name'] == card.name, 'quantity'] += 1
-                self._data.loc[self._data['name'] == card.name, 'value'] = card.price
+            pos = (self._data['name'] == card.name) & (self._data['set'] == card.set) & (self._data['rarity'] == card.rarity) & (self._data['type'] == card.type)
+            if pos.sum() > 0:
+                self._data.loc[pos, 'quantity'] += 1
+                self._data.loc[pos, 'value'] = card.price
             else:
                 new_row = pd.DataFrame({
                     'name': [card.name],
@@ -50,11 +51,11 @@ class Collection:
 
     def _add_booster_stat(self, booster, log) -> None:
         booster_stats = pd.read_csv("src/data/Collection/boosters.csv")
-        booster_stats = booster_stats.append({
+        booster_stats = pd.concat([booster_stats, pd.DataFrame({
             'game': booster.game,
             'set': booster.set,
             'date_added' : datetime.now().strftime("%Y-%m-%d"),
             'value': booster.get_booster_value()
-        }, ignore_index=True)
+        }, index = [booster_stats.shape[0]])], ignore_index=True)
         booster_stats.to_csv("src/data/Collection/boosters.csv", index=False)
         log.INFO(f"Booster stats added for {booster.game} - {booster.set}")
