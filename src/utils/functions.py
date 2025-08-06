@@ -1,9 +1,9 @@
 from models.collection import Collection
 from format_logger.logger import logger
 
-def get_stats(tcg : str= None) -> dict:
+def get_stats(log : logger, tcg : str = None) -> dict:
     collection = Collection(tcg)
-    return collection.get_stats()
+    return collection.get_stats(log)
 
 def add_booster_to_collection(booster_filename : str, tcg: str, log : logger) -> None:
     log = log.start_function("add_booster_to_collection")

@@ -9,13 +9,13 @@ app = Flask(__name__)
 @app.route("/")
 def dashboard():
     log = logger("card_management", "dashboard")
-    collection_stats = get_stats()
+    collection_stats = get_stats(log)
     total_value, total_cards = collection_stats["total_value"], collection_stats["total_cards"]
     tcg_stats = [
         {
             "tcg": tcg.replace("-", " "), 
-            "count": get_stats(tcg)["total_cards"],
-            "value": get_stats(tcg)["total_value"]
+            "count": get_stats(log, tcg)["total_cards"],
+            "value": get_stats(log, tcg)["total_value"]
         }
         for tcg in ["magic-the-gathering", "pokemon", "disney-lorcana", "digimon"]
     ]
