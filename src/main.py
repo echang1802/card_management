@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from format_logger.logger import logger
 
-from utils.functions import get_stats, add_booster_to_collection
+from utils.functions import get_stats, add_cards_to_collection
 
 app = Flask(__name__)
 
@@ -27,7 +27,10 @@ def add_booster():
     log = logger("card_management", "add_booster")
     booster_path = request.json.get("booster_path")
     tcg = request.json.get("tcg")
-    add_booster_to_collection(booster_path, tcg.lower(), log)
+    is_booster = request.json.get("booster", True)  # Checkbox value from modal
+
+    add_cards_to_collection(booster_path, tcg.lower(), is_booster,log)
+
     log.end_function()
     return jsonify({"status": "success"})
 

@@ -5,14 +5,13 @@ def get_stats(log : logger, tcg : str = None) -> dict:
     collection = Collection(tcg)
     return collection.get_stats(log)
 
-def add_booster_to_collection(booster_filename : str, tcg: str, log : logger) -> None:
+def add_cards_to_collection(booster_filename : str, tcg: str, is_booster: bool, log : logger) -> None:
     log = log.start_function("add_booster_to_collection")
     from models.booster import Booster    
     game = tcg.lower().replace(" ", "-")
     set_name = ''.join(filter(lambda x: not x.isdigit(), booster_filename.replace("_", "")))
-    booster = Booster(game = game, set = set_name)
-    booster.open(f"src/data/boosters/{tcg}/{booster_filename}.csv", log)
-    log.INFO(f"Booster opened: {booster_filename} with value {booster.get_booster_value()}")
+    booster = Booster(game = game, set = set_name, file = f"src/data/boosters/{tcg}/{booster_filename}.csv")
     collection = Collection(tcg)
-    collection.add_booster(booster, log)
+    collection.add_booster(booster, is_booster, log)    
+    log.INFO(f"Booster opened: {booster_filename} with value {booster.get_booster_value()}")    
     log.end_function()

@@ -200,7 +200,7 @@
 </head>
 <body>
     <div class="container">
-        <button class="add-btn" id="openModalBtn">+ Add Booster</button>
+        <button class="add-btn" id="openModalBtn">+ Add Cards</button>
         <h1>TCG Card Manager</h1>
         <div class="stats">
             <div>
@@ -234,8 +234,12 @@
                 <option value="disney-lorcana">Lorcana</option>
                 <option value="digimon">Digimon</option>
             </select>
-            <label for="boosterPath" style="margin-top:12px;">Booster file path:</label>
+            <label for="boosterPath" style="margin-top:12px;">File path:</label>
             <input type="text" id="boosterPath" placeholder="Enter file path...">
+            <div style="margin: 12px 0;">
+                <input type="checkbox" id="boosterCheckbox" checked>
+                <label for="boosterCheckbox">Booster</label>
+            </div>
             <div class="modal-actions">
                 <button class="accept-btn" id="acceptBtn">Accept</button>
                 <button class="cancel-btn" id="cancelBtn">Cancel</button>
@@ -258,11 +262,13 @@
         const acceptBtn = document.getElementById('acceptBtn');
         const boosterPathInput = document.getElementById('boosterPath');
         const tcgSelect = document.getElementById('tcgSelect');
+        const boosterCheckbox = document.getElementById('boosterCheckbox');
         const processingModal = document.getElementById('processingModal');
 
         openModalBtn.onclick = () => {
             boosterPathInput.value = '';
             tcgSelect.selectedIndex = 0;
+            boosterCheckbox.checked = true;
             modal.style.display = 'flex';
             boosterPathInput.focus();
         };
@@ -272,13 +278,14 @@
         acceptBtn.onclick = () => {
             const boosterPath = boosterPathInput.value.trim();
             const tcg = tcgSelect.value;
+            const isBooster = boosterCheckbox.checked;
             if (boosterPath && tcg) {
                 modal.style.display = 'none';
                 processingModal.style.display = 'flex';
                 fetch('/add-booster', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({booster_path: boosterPath, tcg: tcg})
+                    body: JSON.stringify({booster_path: boosterPath, tcg: tcg, booster: isBooster})
                 }).then(response => response.json())
                   .then(data => {
                       processingModal.style.display = 'none';

@@ -40,16 +40,18 @@ class database:
             'total_cards': 0
         }
     
-    def add_card_to_collection(self, card) -> None:
+    def add_card_to_collection(self, card, message) -> None:
         cur = self.conn.cursor()
         query = f"""
-        INSERT INTO collections.{card.game} (name, rarity, type, set, quantity, value)
-        VALUES (%s, %s, %s, %s, 1, %s)
+        INSERT INTO collections.{card.game} (name, rarity, type, set, quantity, value, last_message, price_history)
+        VALUES (%s, %s, %s, %s, 1, %s, %s, ARRAY[%s])
         ON CONFLICT (name, rarity, type, set) DO UPDATE SET
             quantity = collections.{card.game}.quantity + 1,
-            value = %s
+            value = EXCLUDED.value,
+            last_message = EXCLUDED.last_message,
+            price_history = array_append(collections.{card.game}.price_history, EXCLUDED.value);
         """
-        cur.execute(query, (card.name, card.rarity, card.type, card.set, card.price, card.price))
+        cur.execute(query, (card.name, card.rarity, card.type, card.set, card.price, message, card.price))
         self.conn.commit()
         cur.close()
 
