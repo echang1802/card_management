@@ -15,7 +15,8 @@ class PriceFinder:
         }
         self._price_function_switch = {
             "pokemon" : lambda results, card: self._get_pokemon_card_price(results, card),
-            "disney-lorcana" : lambda results, card: self._get_pokemon_card_price(results, card)
+            "disney-lorcana" : lambda results, card: self._get_pokemon_card_price(results, card),
+            "magic-the-gathering" : lambda results, card: self._get_pokemon_card_price(results, card)
         }
 
     def find_card_price(self, card, log):
@@ -29,17 +30,20 @@ class PriceFinder:
         response = response.json()
         if "error" in response.keys() and response["code"] == "DAILY_LIMIT_EXCEEDED":
             log.ERROR("Daily limit exceeded for JustTCG API. Please try again later.")
-            return -1
+            return -1, "DAILY_LIMIT_EXCEEDED"
         elif "error" in response.keys():
             log.ERROR(f"Error fetching card price: {response['error']}")
             price = 0
+            message = "Error"
         elif response["meta"]["total"] == 0:
             log.WARNING(f"No results found for card: {card.name} in game: {card.game}")
             price = 0
+            message = "No_results"
         else:
             results = response["data"]
             price = self._price_function_switch[card.game](results, card)
-        return price
+            message = "ok" if price > 0 else "No_results"
+        return price, message
 
     def _get_pokemon_card_price(self, results, card):
         best_result = {
@@ -48,7 +52,7 @@ class PriceFinder:
         }
         for result in results:
             score = 0
-            if card.set in result["set"]:
+            if card.set in result["set"] and "Art Series" not in result["set"]:
                 score += 1
             if card.rarity == result["rarity"]:
                 score += 1

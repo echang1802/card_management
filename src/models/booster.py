@@ -35,7 +35,7 @@ class Booster:
                 card.price, message = priceF.find_card_price(card, log)
             if message == "DAILY_LIMIT_EXCEEDED":
                 log.WARNING("Daily limit exceeded for JustTCG API. Skipping card price retrieval for remaining cards.")
-                booster = booster.iloc[:idx]  # Stop processing further cards
+                booster = booster.iloc[idx:]  # Stop processing further cards
                 booster.to_csv(self.file, index=False)
                 break
             self.cards.append(card)
