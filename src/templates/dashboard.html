@@ -13,7 +13,7 @@
             padding: 0;
         }
         .container {
-            max-width: 700px;
+            max-width: 1800px; /* Use more of the monitor width */
             margin: 40px auto;
             background: #2c2f34;
             border-radius: 16px;
@@ -88,6 +88,7 @@
             align-items: center;
             font-size: 1.1em;
             gap: 32px;
+            flex-direction: column;
         }
         .tcg-list .tcg-name {
             font-weight: bold;
@@ -191,10 +192,63 @@
             0% { transform: rotate(0deg);}
             100% { transform: rotate(360deg);}
         }
-        @media (max-width: 600px) {
-            .container { padding: 16px; }
-            .stats { flex-direction: column; }
-            .stats div:not(:last-child) { border-right: none; border-bottom: 1px solid #444; margin-bottom: 12px; }
+        .tcg-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 1 row, 4 columns */
+            gap: 32px;
+            margin: 0 auto 32px auto;
+            width: 100%;
+        }
+        .tcg-box {
+            background: #393e46;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            padding: 24px 32px;
+            min-width: 220px;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .tcg-name {
+            font-weight: bold;
+            color: #00adb5;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .tcg-count, .tcg-value {
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .tcg-value {
+            color: #ffd700;
+        }
+        .tcg-avg {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+        .tcg-top {
+            margin-top: 10px;
+            width: 100%;
+        }
+        .tcg-top strong {
+            color: #ffd700;
+            font-size: 1em;
+        }
+        .tcg-top ol {
+            padding-left: 18px;
+            margin: 0;
+        }
+        @media (max-width: 1200px) {
+            .container { max-width: 1000px; }
+            .tcg-stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .container { max-width: 700px; }
+            .tcg-stats-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -213,15 +267,24 @@
             </div>
         </div>
         <h2>Stats by TCG</h2>
-        <ul class="tcg-list">
+        <div class="tcg-stats-row">
         {% for stat in tcg_stats %}
-            <li>
-                <span class="tcg-name">{{ stat.tcg|replace("-", "")|capitalize }}</span>
+            <div class="tcg-box">
+                <span class="tcg-name">{{ stat.tcg|capitalize }}</span>
                 <span class="tcg-count">{{ stat.count }} cards</span>
-                <span class="tcg-value">${{ "{:,}".format(stat.value) }}</span>
-            </li>
+                <span class="tcg-value">Total value: ${{ "{:,}".format(stat.value) }}</span>
+                <span class="tcg-avg">Avg card value: ${{ "{:.2f}".format(stat.avg_value) }}</span>
+                <div class="tcg-top">
+                    <strong>Top 5 Most Valuable Cards:</strong>
+                    <ol>
+                    {% for card in stat.top_cards %}
+                        <li>{{ card.name }} - ${{ "{:.2f}".format(card.price) }}</li>
+                    {% endfor %}
+                    </ol>
+                </div>
+            </div>
         {% endfor %}
-        </ul>
+        </div>
     </div>
 
     <!-- Modal -->

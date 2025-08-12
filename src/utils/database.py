@@ -23,7 +23,7 @@ class database:
     def get_game_stats(self, game : str, log) -> dict:
         cur = self.conn.cursor()
         query = f"""
-        SELECT SUM(value * quantity) AS total_value, SUM(quantity) AS total_cards
+        SELECT SUM(value * quantity) AS total_value, SUM(quantity), AVG(value) AS total_cards
         FROM collections.{game};
         """
         cur.execute(query)
@@ -33,13 +33,38 @@ class database:
             log.INFO(f"Stats for {game} retrieved, total value: {result[0]}, total cards: {result[1]}")
             return {
                 'total_value': round(result[0], 2) if result[0] is not None else 0,
-                'total_cards': result[1] if result[1] is not None else 0
+                'total_cards': result[1] if result[1] is not None else 0,
+                'avg_value' : round(result[2], 2) if result[2] is not None else 0
             }
         return {
             'total_value': 0,
-            'total_cards': 0
+            'total_cards': 0,
+            'avg_value': 0
         }
-    
+
+    def get_top_cards(self, game : str, log) -> list:
+        cur = self.conn.cursor()
+        query = f"""
+        SELECT name, rarity, type, set, quantity, value
+        FROM collections.{game}
+        ORDER BY value DESC
+        LIMIT 5;
+        """
+        cur.execute(query)
+        result = cur.fetchall()
+        cur.close()
+        if result:
+            log.INFO(f"Top cards for {game} retrieved")
+            return [{
+                'name': row[0],
+                'rarity': row[1],
+                'type': row[2],
+                'set': row[3],
+                'quantity': row[4],
+                'price': round(row[5], 2) if row[5] is not None else 0
+            } for row in result]
+        return []
+
     def add_card_to_collection(self, card, message) -> None:
         cur = self.conn.cursor()
         query = f"""

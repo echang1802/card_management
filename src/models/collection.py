@@ -20,7 +20,9 @@ class Collection:
 
     def get_stats(self, log) -> dict:
         if self._game:
-            return self._database.get_game_stats(self._game, log)
+            stats = self._database.get_game_stats(self._game, log)
+            stats["top_cards"] = self._database.get_top_cards(self._game, log)
+            return stats
         else:
             total_value = 0
             total_cards = 0
